@@ -41,16 +41,16 @@ class CheckmatePattern:
     def king_location(self, king):
         surround = self.surrounding_squares(king)
 
+        # King is in center
         if (self.is_in_board(surround[3]) and self.is_in_board(surround[4]) and 
             self.is_in_board(surround[0]) and self.is_in_board(surround[1]) and self.is_in_board(surround[2]) and
             self.is_in_board(surround[5]) and self.is_in_board(surround[6]) and self.is_in_board(surround[7])):
-            print('King in center!')
             return 0
+        # Corner
         elif (chess.square_file(king) == 0 or chess.square_file(king) == 7) and (chess.square_rank(king) == 0 or chess.square_rank(king) == 7):
-            print('King on corner')
             return 2
+        # Side
         else:
-            print('King on side')
             return 1
     
     def king_on_side(self, king):
@@ -92,15 +92,30 @@ class CheckmatePattern:
             if chess.square_rank(king) == 7:
                 print('King top right!')
                 return [54, 55, 62]
+
+    def winner(self):
+        if str(self.board.result()) == "1-0":
+            return True
+        else:
+            return False
+
+    # Checkmate patterns
+    def smothered(self, available_squares):
+        # If all the squares around the king are blocked by its friendly pieces
+        if all(self.is_blocked(i, not self.winner()) for i in available_squares):
+            print("That's a smothered mate!")
+
     
     def find_checkmate_pattern(self, victorious_side):
-        opponent_king = self.board.king(not victorious_side)
+        losing_side = not self.winner()
+        opponent_king = self.board.king(losing_side)
 
         if self.board.is_checkmate:
             print(self.board)
-
             for square in self.board.checkers():
+
                 if self.king_location(opponent_king) == 2:
+
                     available_squares = self.king_on_corner(opponent_king)
 
                     if str(self.board.piece_at(square)).upper() == 'Q':
@@ -112,11 +127,13 @@ class CheckmatePattern:
                     elif str(self.board.piece_at(square)).upper() == 'B':
                         print(self.get_full_name('B'), 'gave checkmate')
 
-                    
                     elif str(self.board.piece_at(square)).upper() == 'N':
                         print(self.get_full_name('N'), 'gave checkmate')
+
+                        self.smothered(available_squares)
+
                     elif str(self.board.piece_at(square)).upper() == 'P':
-                        print(self.get_full_name('P'), 'gave checkmate')
+                        print(self.get_full_name('P'), 'checkmate!')
                 
                 elif self.king_location(opponent_king) == 1:
                     available_squares = self.king_on_side(opponent_king)
@@ -132,15 +149,40 @@ class CheckmatePattern:
 
                     elif str(self.board.piece_at(square)).upper() == 'N':
                         print(self.get_full_name('N'), 'gave checkmate')
+
+                        self.smothered(available_squares)
+
                     elif str(self.board.piece_at(square)).upper() == 'P':
-                        print(self.get_full_name('P'), 'gave checkmate')
+                        print(self.get_full_name('P'), 'checkmate!')
+                else:
+                    available_squares = self.surrounding_squares(opponent_king)
+
+                    if str(self.board.piece_at(square)).upper() == 'Q':
+                        print(get_full_name('Q'), 'gave checkmate')
+
+                    elif str(self.board.piece_at(square)).upper() == 'R':
+                        print(self.get_full_name('R'), 'gave checkmate')
+        
+                    elif str(self.board.piece_at(square)).upper() == 'B':
+                        print(self.get_full_name('B'), 'gave checkmate')
+
+                    elif str(self.board.piece_at(square)).upper() == 'N':
+                        print(self.get_full_name('N'), 'gave checkmate')
+
+                    elif str(self.board.piece_at(square)).upper() == 'P':
+                        print(self.get_full_name('P'), 'checkmate!')
+
 
 
 board1 = CheckmatePattern('7k/p2p2bp/1p1P2p1/8/2B2pNP/P4n2/R1P2Pb1/1R1Kr3 w - - 4 29') # White is checkmated
-board2 = CheckmatePattern('7k/5B2/6K1/4B3/8/8/8/8 b - - 62 100') # Black is checkmated
+board2 = CheckmatePattern('7k/5B2/6K1/4B3/8/8/8/8 b - - 62 100') # Black is checkmate
+smothered = CheckmatePattern('6rk/5Npp/8/8/8/8/1K2P3/8 b - - 1 1')
+smothered2 = CheckmatePattern('rnbqkbnr/pp1ppppp/2pN4/8/8/4Q3/PPPPPPPP/RNB1KB1R b KQkq - 1 1')
 
 white = True
 black = False
 
 print(board1.find_checkmate_pattern(black))
 print(board2.find_checkmate_pattern(white))
+print(smothered.find_checkmate_pattern(white))
+print(smothered2.find_checkmate_pattern(white))
