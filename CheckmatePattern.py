@@ -121,8 +121,18 @@ class CheckmatePattern:
         else: 
             if all(self.is_blocked(i, not self.winner()) for i in available_squares[-2:]):
                 print('Back-rank mate')
-
     
+    def ladder(self, available_squares):
+        if self.winner():
+            if (str(self.board.attackers(self.winner(), available_squares[0])).upper() == 'R'):
+                print('Ladder mate')
+        else:
+            if str(self.board.attackers(self.winner(), available_squares[2])).upper() == 'R':
+                print('Ladder mate')
+
+
+    def epaulette(self, available_squares):
+        pass
         
 
     
@@ -133,6 +143,9 @@ class CheckmatePattern:
         if self.board.is_checkmate:
             print(self.board)
             for square in self.board.checkers():
+                if len(self.board.checkers()) > 1:
+                    print('Double checkmate')
+                    break
 
                 if self.king_location(opponent_king) == 2:
 
@@ -161,12 +174,16 @@ class CheckmatePattern:
                     available_squares = self.king_on_side(opponent_king)
 
                     if str(self.board.piece_at(square)).upper() == 'Q':
-                        print(get_full_name('Q'), 'gave checkmate')
+                        print(self.get_full_name('Q'), 'gave checkmate')
+
+                        self.back_rank(available_squares)
+                        self.ladder(available_squares)
 
                     elif str(self.board.piece_at(square)).upper() == 'R':
                         print(self.get_full_name('R'), 'gave checkmate')
 
                         self.back_rank(available_squares)
+                        self.ladder(available_squares)
         
                     elif str(self.board.piece_at(square)).upper() == 'B':
                         print(self.get_full_name('B'), 'gave checkmate')
@@ -204,6 +221,8 @@ class CheckmatePattern:
 # smothered2 = CheckmatePattern('rnbqkbnr/pp1ppppp/2pN4/8/8/4Q3/PPPPPPPP/RNB1KB1R b KQkq - 1 1')
 black_back_ranked = CheckmatePattern('2R3k1/5ppp/8/8/8/8/8/3K4 b - - 1 1')
 white_back_ranked = CheckmatePattern('1k6/8/8/8/8/8/PPP5/K2r4 w - - 2 2')
+double_checkmate = CheckmatePattern('5rk1/4Np1p/8/8/3B4/8/8/1K4R1 b - - 1 1')
+ladder = CheckmatePattern('8/3k4/8/8/8/8/1r6/2q2K2 w - - 2 2')
 
 white = True
 black = False
@@ -212,3 +231,5 @@ black = False
 # print(board2.find_checkmate_pattern())
 print(black_back_ranked.find_checkmate_pattern())
 print(white_back_ranked.find_checkmate_pattern())
+print(double_checkmate.find_checkmate_pattern())
+print(ladder.find_checkmate_pattern())
