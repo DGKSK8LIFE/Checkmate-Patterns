@@ -103,10 +103,30 @@ class CheckmatePattern:
     def smothered(self, available_squares):
         # If all the squares around the king are blocked by its friendly pieces
         if all(self.is_blocked(i, not self.winner()) for i in available_squares):
-            print("That's a smothered mate!")
+            print('Smothered mate')
+
+    # Back rank checkmate depends on what side the king is on
+    def back_rank(self, available_squares):
+        if self.winner():
+            if all(self.is_blocked(i, not self.winner()) for i in available_squares[-3:]):
+                print('Back-rank mate')
+        else: 
+            if all(self.is_blocked(i, not self.winner()) for i in available_squares[:3]):
+                print('Back-rank mate')
+
+    def back_rank_corner(self, available_squares):
+        if self.winner():
+            if all(self.is_blocked(i, not self.winner()) for i in available_squares[:2]):
+                print('Back-rank mate')
+        else: 
+            if all(self.is_blocked(i, not self.winner()) for i in available_squares[-2:]):
+                print('Back-rank mate')
 
     
-    def find_checkmate_pattern(self, victorious_side):
+        
+
+    
+    def find_checkmate_pattern(self):
         losing_side = not self.winner()
         opponent_king = self.board.king(losing_side)
 
@@ -123,6 +143,8 @@ class CheckmatePattern:
 
                     elif str(self.board.piece_at(square)).upper() == 'R':
                         print(self.get_full_name('R'), 'gave checkmate')
+
+                        self.back_rank_corner(available_squares)
         
                     elif str(self.board.piece_at(square)).upper() == 'B':
                         print(self.get_full_name('B'), 'gave checkmate')
@@ -143,6 +165,8 @@ class CheckmatePattern:
 
                     elif str(self.board.piece_at(square)).upper() == 'R':
                         print(self.get_full_name('R'), 'gave checkmate')
+
+                        self.back_rank(available_squares)
         
                     elif str(self.board.piece_at(square)).upper() == 'B':
                         print(self.get_full_name('B'), 'gave checkmate')
@@ -174,15 +198,17 @@ class CheckmatePattern:
 
 
 
-board1 = CheckmatePattern('7k/p2p2bp/1p1P2p1/8/2B2pNP/P4n2/R1P2Pb1/1R1Kr3 w - - 4 29') # White is checkmated
-board2 = CheckmatePattern('7k/5B2/6K1/4B3/8/8/8/8 b - - 62 100') # Black is checkmate
-smothered = CheckmatePattern('6rk/5Npp/8/8/8/8/1K2P3/8 b - - 1 1')
-smothered2 = CheckmatePattern('rnbqkbnr/pp1ppppp/2pN4/8/8/4Q3/PPPPPPPP/RNB1KB1R b KQkq - 1 1')
+# board1 = CheckmatePattern('7k/p2p2bp/1p1P2p1/8/2B2pNP/P4n2/R1P2Pb1/1R1Kr3 w - - 4 29') # White is checkmated
+# board2 = CheckmatePattern('7k/5B2/6K1/4B3/8/8/8/8 b - - 62 100') # Black is checkmate
+# smothered = CheckmatePattern('6rk/5Npp/8/8/8/8/1K2P3/8 b - - 1 1')
+# smothered2 = CheckmatePattern('rnbqkbnr/pp1ppppp/2pN4/8/8/4Q3/PPPPPPPP/RNB1KB1R b KQkq - 1 1')
+black_back_ranked = CheckmatePattern('2R3k1/5ppp/8/8/8/8/8/3K4 b - - 1 1')
+white_back_ranked = CheckmatePattern('1k6/8/8/8/8/8/PPP5/K2r4 w - - 2 2')
 
 white = True
 black = False
 
-print(board1.find_checkmate_pattern(black))
-print(board2.find_checkmate_pattern(white))
-print(smothered.find_checkmate_pattern(white))
-print(smothered2.find_checkmate_pattern(white))
+# print(board1.find_checkmate_pattern())
+# print(board2.find_checkmate_pattern())
+print(black_back_ranked.find_checkmate_pattern())
+print(white_back_ranked.find_checkmate_pattern())
