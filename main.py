@@ -5,11 +5,9 @@ import berserk
 import json
 
 with open('token.json') as f:
-        token = json.load(f)
+    token = json.load(f)
 
-API_KEY = token["YT_API"]
-
-client = berserk.Client(session=berserk.TokenSession(API_KEY))
+client = berserk.Client(session=berserk.TokenSession(token["token"]))
 player = input('Please enter the lichess.org acocunt you want to analyze: ')
 
 

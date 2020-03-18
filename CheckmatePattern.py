@@ -21,11 +21,6 @@ class CheckmatePattern:
         else:
             return False
 
-    def valid_squares(self, valid, non_valid):
-        for squares in sorted(non_valid, reverse=True):
-            del valid[squares]
-        return valid
-
     # Check if a square around the king is blocked by his own piece
     def is_blocked(self, square, side):
         if self.board.color_at(square) == side:
@@ -54,25 +49,30 @@ class CheckmatePattern:
             return 1
     
     def king_on_side(self, king):
-        surround = self.surrounding_squares(king)
+
+        #01     34      123     4 0     
+        # 2     2       0 4     321
+        #43     10
 
         # If the king is on the left side
         if chess.square_file(king) == 0:
-            return valid_squares(surround, [king + 7, king - 1, king - 9])
+            return [king + 8, king + 9, king + 1, king - 7, king - 8]
 
         # If king is on right
         elif chess.square_file(king) == 7:
-            return valid_squares(surround, [king + 9, king + 1, king - 7])
+            return [king - 8, king - 9, king - 1, king + 7, king + 8]
 
         # Bottom
         elif chess.square_rank(king) == 0:
-            return surround[:5]
+            return [king - 1, king + 7, king + 8, king + 9, king + 1]
         # Top
         elif chess.square_rank(king) == 7:
-            return surround[3:]
+            return [king + 1, king - 7, king - 8, king - 9, king - 1]
 
     def king_on_corner(self, king):
-        surround = self.surrounding_squares(king)
+
+        #21     12      0       0
+        # 0     0      21       12
 
         if chess.square_file(king) == 0:
             # Bottom left
@@ -107,16 +107,10 @@ class CheckmatePattern:
 
     # Back rank checkmate depends on what side the king is on
     def back_rank(self, available_squares):
-        '''
-        if self.winner():
-            if all(self.is_blocked(i, not self.winner()) for i in available_squares[-3:]):
-                print('Back-rank mate')
-        else: 
-            if all(self.is_blocked(i, not self.winner()) for i in available_squares[:3]):
-                print('Back-rank mate')
-        '''
-        pass
-
+        # On a board, there are 2 realistic ways back ranks can happen (white checkmated on his side, and vice versa)
+        if all(self.is_blocked(i, not self.winner()) for i in available_squares[1:4]):
+            print('Back-rank mate')
+        
     def back_rank_corner(self, available_squares):
         '''
         if self.winner():
@@ -147,72 +141,75 @@ class CheckmatePattern:
                 if len(self.board.checkers()) > 1:
                     print('Double checkmate')
                     break
+                try:
+                    if self.king_location(opponent_king) == 2:
 
-                if self.king_location(opponent_king) == 2:
+                        available_squares = self.king_on_corner(opponent_king)
 
-                    available_squares = self.king_on_corner(opponent_king)
+                        if str(self.board.piece_at(square)).upper() == 'Q':
+                            print(self.get_full_name('Q'), 'gave checkmate')
 
-                    if str(self.board.piece_at(square)).upper() == 'Q':
-                        print(self.get_full_name('Q'), 'gave checkmate')
+                        elif str(self.board.piece_at(square)).upper() == 'R':
+                            print(self.get_full_name('R'), 'gave checkmate')
 
-                    elif str(self.board.piece_at(square)).upper() == 'R':
-                        print(self.get_full_name('R'), 'gave checkmate')
+                            self.back_rank_corner(available_squares)
+            
+                        elif str(self.board.piece_at(square)).upper() == 'B':
+                            print(self.get_full_name('B'), 'gave checkmate')
 
-                        self.back_rank_corner(available_squares)
-        
-                    elif str(self.board.piece_at(square)).upper() == 'B':
-                        print(self.get_full_name('B'), 'gave checkmate')
+                        elif str(self.board.piece_at(square)).upper() == 'N':
+                            print(self.get_full_name('N'), 'gave checkmate')
 
-                    elif str(self.board.piece_at(square)).upper() == 'N':
-                        print(self.get_full_name('N'), 'gave checkmate')
+                            self.smothered(available_squares)
 
-                        self.smothered(available_squares)
+                        elif str(self.board.piece_at(square)).upper() == 'P':
+                            print(self.get_full_name('P'), 'checkmate!')
+                    
+                    elif self.king_location(opponent_king) == 1:
+                        available_squares = self.king_on_side(opponent_king)
 
-                    elif str(self.board.piece_at(square)).upper() == 'P':
-                        print(self.get_full_name('P'), 'checkmate!')
-                
-                elif self.king_location(opponent_king) == 1:
-                    available_squares = self.king_on_side(opponent_king)
+                        if str(self.board.piece_at(square)).upper() == 'Q':
+                            print(self.get_full_name('Q'), 'gave checkmate')
 
-                    if str(self.board.piece_at(square)).upper() == 'Q':
-                        print(self.get_full_name('Q'), 'gave checkmate')
+                            self.back_rank(available_squares)
+                            self.ladder(available_squares)
 
-                        self.back_rank(available_squares)
-                        self.ladder(available_squares)
+                        elif str(self.board.piece_at(square)).upper() == 'R':
+                            print(self.get_full_name('R'), 'gave checkmate')
 
-                    elif str(self.board.piece_at(square)).upper() == 'R':
-                        print(self.get_full_name('R'), 'gave checkmate')
+                            self.back_rank(available_squares)
+                            self.ladder(available_squares)
+            
+                        elif str(self.board.piece_at(square)).upper() == 'B':
+                            print(self.get_full_name('B'), 'gave checkmate')
 
-                        self.back_rank(available_squares)
-                        self.ladder(available_squares)
-        
-                    elif str(self.board.piece_at(square)).upper() == 'B':
-                        print(self.get_full_name('B'), 'gave checkmate')
+                        elif str(self.board.piece_at(square)).upper() == 'N':
+                            print(self.get_full_name('N'), 'gave checkmate')
 
-                    elif str(self.board.piece_at(square)).upper() == 'N':
-                        print(self.get_full_name('N'), 'gave checkmate')
+                            self.smothered(available_squares)
 
-                        self.smothered(available_squares)
+                        elif str(self.board.piece_at(square)).upper() == 'P':
+                            print(self.get_full_name('P'), 'checkmate!')
+                    else:
+                        available_squares = self.surrounding_squares(opponent_king)
 
-                    elif str(self.board.piece_at(square)).upper() == 'P':
-                        print(self.get_full_name('P'), 'checkmate!')
-                else:
-                    available_squares = self.surrounding_squares(opponent_king)
+                        if str(self.board.piece_at(square)).upper() == 'Q':
+                            print(self.get_full_name('Q'), 'gave checkmate')
 
-                    if str(self.board.piece_at(square)).upper() == 'Q':
-                        print(self.get_full_name('Q'), 'gave checkmate')
+                        elif str(self.board.piece_at(square)).upper() == 'R':
+                            print(self.get_full_name('R'), 'gave checkmate')
+            
+                        elif str(self.board.piece_at(square)).upper() == 'B':
+                            print(self.get_full_name('B'), 'gave checkmate')
 
-                    elif str(self.board.piece_at(square)).upper() == 'R':
-                        print(self.get_full_name('R'), 'gave checkmate')
-        
-                    elif str(self.board.piece_at(square)).upper() == 'B':
-                        print(self.get_full_name('B'), 'gave checkmate')
+                        elif str(self.board.piece_at(square)).upper() == 'N':
+                            print(self.get_full_name('N'), 'gave checkmate')
 
-                    elif str(self.board.piece_at(square)).upper() == 'N':
-                        print(self.get_full_name('N'), 'gave checkmate')
-
-                    elif str(self.board.piece_at(square)).upper() == 'P':
-                        print(self.get_full_name('P'), 'checkmate!')
+                        elif str(self.board.piece_at(square)).upper() == 'P':
+                            print(self.get_full_name('P'), 'checkmate!')
+                except TypeError:
+                    # 100% error proof
+                    pass
 
 
 '''
