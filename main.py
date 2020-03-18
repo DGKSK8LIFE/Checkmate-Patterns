@@ -2,9 +2,19 @@ from CheckmatePattern import CheckmatePattern
 import chess, chess.pgn
 import io
 import berserk
+import json
 
-client = berserk.Client()
-games = list(client.games.export_by_player('buenos_dias'))
+with open('token.json') as f:
+        token = json.load(f)
+
+API_KEY = token["YT_API"]
+
+client = berserk.Client(session=berserk.TokenSession(API_KEY))
+player = input('Please enter the lichess.org acocunt you want to analyze: ')
+
+
+print("Fetching " + player + "'s games. This may take a moment on the number of games they have played...")
+games = list(client.games.export_by_player(player))
 
 checkmate_counter = 0
 checkmate_moves = []
