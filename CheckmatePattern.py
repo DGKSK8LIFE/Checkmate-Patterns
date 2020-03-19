@@ -37,9 +37,7 @@ class CheckmatePattern:
         surround = self.surrounding_squares(king)
 
         # King is in center
-        if (self.is_in_board(surround[3]) and self.is_in_board(surround[4]) and 
-            self.is_in_board(surround[0]) and self.is_in_board(surround[1]) and self.is_in_board(surround[2]) and
-            self.is_in_board(surround[5]) and self.is_in_board(surround[6]) and self.is_in_board(surround[7])):
+        if chess.square_file(king) != 0 and chess.square_file(king) != 7 and chess.square_rank(king) != 0 and chess.square_rank(king) != 7:
             return 0
         # Corner
         elif (chess.square_file(king) == 0 or chess.square_file(king) == 7) and (chess.square_rank(king) == 0 or chess.square_rank(king) == 7):
@@ -116,8 +114,10 @@ class CheckmatePattern:
                 else:
                 # found the first free square
                     squares_free.append(i)
-        if len(squares_free) == 2 and (self.board.attackers(self.winner(), squares_free[0]) == self.board.attackers(self.winner(), squares_free[1])):
-            print('Suffocation')
+        if len(squares_free) == 1:
+            print('Suffocation mate')
+        elif len(squares_free) == 2 and (self.board.attackers(self.winner(), squares_free[0]) == self.board.attackers(self.winner(), squares_free[1])):
+            print('Suffocation mate')
 
     
     def suffocation_corner(self, available_squares):
@@ -142,24 +142,25 @@ class CheckmatePattern:
             print('Back-rank mate')
         
     def back_rank_corner(self, available_squares):
-        '''
-        if self.winner():
-            if all(self.is_blocked(i, not self.winner()) for i in available_squares[:2]):
-                print('Back-rank mate')
-        else: 
-            if all(self.is_blocked(i, not self.winner()) for i in available_squares[-2:]):
-                print('Back-rank mate')
-        '''
         pass
     
     def ladder(self, available_squares):
-        
-        pass
+        # If all the remaining squares are attacked by a queen or a rook
+        ladder = False
+        for i in available_squares[1:4]:    
+            for attacker in self.board.attackers(self.winner(), i):
+                if self.board.color_at(attacker) == self.winner() and (str(self.board.piece_at(attacker)).upper() == 'Q' or str(self.board.piece_at(attacker)).upper() == 'R'):
+                    # For some reason, it would print 'Ladder mate' 3 times. This just bypasses it.
+                    ladder = True
+        if ladder:
+            print('Ladder mate')
 
-    def epaulette(self, available_squares):
-        pass
-        
 
+    def epaulette(self, available_squares, queen_pos):
+        distance_king_queen = chess.square_distance(self.board.king(not self.winner()), queen_pos)
+        
+        if self.is_blocked(available_squares[0], not self.winner()) and self.is_blocked(available_squares[4], not self.winner()) and distance_king_queen == 2:
+            print('Epaulette mate')
     
     def find_checkmate_pattern(self):
         losing_side = not self.winner()
@@ -205,8 +206,10 @@ class CheckmatePattern:
                         if str(self.board.piece_at(square)).upper() == 'Q':
                             print(self.get_full_name('Q'), 'gave checkmate')
 
+                            
                             self.back_rank(available_squares)
                             self.ladder(available_squares)
+                            self.epaulette(available_squares, square)
 
                         elif str(self.board.piece_at(square)).upper() == 'R':
                             print(self.get_full_name('R'), 'gave checkmate')
@@ -245,3 +248,5 @@ class CheckmatePattern:
                 except TypeError:
                     # 100% error proof
                     pass
+
+print(CheckmatePattern('8/8/8/3K4/8/8/1p3R2/2k3R1 b - - 1 1').find_checkmate_pattern())
