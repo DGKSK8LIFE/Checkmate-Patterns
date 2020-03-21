@@ -242,21 +242,33 @@ class CheckmatePattern:
         ladder = False
         remaining_squares = [available_squares[0], available_squares[4]]
 
-        for i in available_squares[1:4]:    
-            for attacker in self.board.attackers(self.winner(), i):
+        checkmater_file = 0
+        checkmater_rank = 0
+        attacker_file = 0
+        attacker_rank = 0
+
+        for i in available_squares[1:4]:
+            for attacker in self.board.attackers(self.winner(), i):       
                 if (self.board.color_at(attacker) == self.winner() and square != i and 
                 (str(self.board.piece_at(attacker)).upper() == 'Q' or str(self.board.piece_at(attacker)).upper() == 'R')):
                     # For some reason, it would print 'Ladder mate' 3 times. This just bypasses it.
+                    attacker_file = chess.square_file(attacker)
+                    attacker_rank = chess.square_rank(attacker)
                     ladder = True
 
         for i in remaining_squares:
-            for attacker in self.board.attackers(self.winner(), i):
-                if str(self.board.piece_at(attacker)).upper() == 'R' or str(self.board.piece_at(attacker)).upper() == 'Q':
+            for checkmater in self.board.attackers(self.winner(), i):
+                if str(self.board.piece_at(checkmater)).upper() == 'R' or str(self.board.piece_at(checkmater)).upper() == 'Q':
+                    checkmater_file = chess.square_file(checkmater)
+                    checkmater_rank = chess.square_rank(checkmater)
                     ladder = True
                 else:
                     ladder = False
-        if ladder:
-            print('Ladder mate')
+
+        
+        if ((checkmater_file == 0 and attacker_file == 1) or (checkmater_file == 7 and attacker_file == 6)) or ((checkmater_rank == 0 and attacker_rank == 1) or (checkmater_rank == 7 and attacker_rank == 6)):
+            if ladder:
+                print('Ladder mate')
     
     def ladder_corner(self, available_squares, square):
         # 8 plausible ways to get ladder mated on a corner
@@ -373,13 +385,15 @@ class CheckmatePattern:
 
                         elif str(self.board.piece_at(square)).upper() == 'R':
                             print(self.get_full_name('R'), 'gave checkmate')
+
+                            self.ladder(available_squares, square)
                             
                             self.suffocation_and_pillsburys(available_squares, square)
                             self.blind_swine(available_squares)
                             self.back_rank(available_squares)
                             self.anastasias(available_squares)
                             self.opera(available_squares, square)
-                            self.ladder(available_squares, square)
+                            
             
                         elif str(self.board.piece_at(square)).upper() == 'B':
                             print(self.get_full_name('B'), 'gave checkmate')
@@ -396,6 +410,6 @@ class CheckmatePattern:
                 except TypeError:
                     # 100% error proof
                     pass
-
-print(CheckmatePattern('4B3/8/1p6/k7/R5K1/8/8/8 b - - 1 1').find_checkmate_pattern())
-print(CheckmatePattern('kR6/p7/8/8/8/6B1/K7/8 b - - 1 1').find_checkmate_pattern())
+# TODO: fix
+print(CheckmatePattern('4R1k1/p4ppp/8/3q4/8/5P2/PP3KPP/8 b - - 1 25').find_checkmate_pattern())
+print(CheckmatePattern('8/5K1k/8/4N3/8/8/7R/8 b - - 31 77').find_checkmate_pattern())
