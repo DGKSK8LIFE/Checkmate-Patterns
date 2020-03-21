@@ -221,6 +221,21 @@ class CheckmatePattern:
                 if str(self.board.piece_at(defender)) == 'B':
                     print('Opera mate')
 
+    def mayets(self, available_squares, square):
+        if square == available_squares[0] and (self.is_blocked(available_squares[1]) or self.is_blocked(available_squares[2])):
+            for defender in self.board.attackers(self.winner(), available_squares[0]):
+                if str(self.board.piece_at(defender)) == 'B':
+                    print("Mayet's mate")
+        elif square == available_squares[4] and (self.is_blocked(available_squares[2]) or self.is_blocked(available_squares[3])):
+            for defender in self.board.attackers(self.winner(), available_squares[0]):
+                if str(self.board.piece_at(defender)) == 'B':
+                    print("Mayet's mate")
+
+    def mayets_corner(self, available_squares, square):
+        if square == available_squares[0] and (self.is_blocked(available_squares[2]) or self.is_blocked(available_squares[1])):
+            for defender in self.board.attackers(self.winner(), available_squares[0]):
+                if str(self.board.piece_at(defender)) == 'B':
+                    print("Mayet's mate")
 
     def ladder(self, available_squares, square):
         # If all the remaining squares are attacked by a queen or a rook
@@ -235,7 +250,7 @@ class CheckmatePattern:
                     ladder = True
 
         for i in remaining_squares:
-            for attacker in self.board.attacker(self.winner(), i):
+            for attacker in self.board.attackers(self.winner(), i):
                 if str(self.board.piece_at(attacker)).upper() == 'R' or str(self.board.piece_at(attacker)).upper() == 'Q':
                     ladder = True
                 else:
@@ -303,6 +318,7 @@ class CheckmatePattern:
                             self.back_rank_corner(available_squares)
                             self.anastasias_corner(available_squares)
                             self.arabian(available_squares, square)
+                            self.mayets_corner(available_squares, square)
                             self.ladder_corner(available_squares, square)
             
                         elif str(self.board.piece_at(square)).upper() == 'B':
@@ -331,6 +347,8 @@ class CheckmatePattern:
 
                         elif str(self.board.piece_at(square)).upper() == 'R':
                             print(self.get_full_name('R'), 'gave checkmate')
+
+                            self.blind_swine(available_squares)
             
                         elif str(self.board.piece_at(square)).upper() == 'B':
                             print(self.get_full_name('B'), 'gave checkmate')
@@ -351,7 +369,7 @@ class CheckmatePattern:
                             self.scholars(available_squares, square)
                             self.back_rank(available_squares)
                             self.epaulette(available_squares, square)
-                            self.ladder(available_squares)
+                            self.ladder(available_squares, square)
 
                         elif str(self.board.piece_at(square)).upper() == 'R':
                             print(self.get_full_name('R'), 'gave checkmate')
@@ -361,7 +379,7 @@ class CheckmatePattern:
                             self.back_rank(available_squares)
                             self.anastasias(available_squares)
                             self.opera(available_squares, square)
-                            self.ladder(available_squares)
+                            self.ladder(available_squares, square)
             
                         elif str(self.board.piece_at(square)).upper() == 'B':
                             print(self.get_full_name('B'), 'gave checkmate')
@@ -380,4 +398,4 @@ class CheckmatePattern:
                     pass
 
 print(CheckmatePattern('4B3/8/1p6/k7/R5K1/8/8/8 b - - 1 1').find_checkmate_pattern())
-
+print(CheckmatePattern('kR6/p7/8/8/8/6B1/K7/8 b - - 1 1').find_checkmate_pattern())
