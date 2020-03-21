@@ -16,8 +16,8 @@ class CheckmatePattern:
         return full_piece_names[letter.upper()]
 
     # Check if a square around the king is blocked by his own piece
-    def is_blocked(self, square, side):
-        if self.board.color_at(square) == side:
+    def is_blocked(self, square):
+        if self.board.color_at(square) == (not self.winner()):
             return True
         else:
             return False
@@ -79,7 +79,7 @@ class CheckmatePattern:
 
     def smothered(self, available_squares):
         # If all the squares around the king are blocked by its friendly pieces
-        if all(self.is_blocked(i, not self.winner()) for i in available_squares):
+        if all(self.is_blocked(i) for i in available_squares):
             print('Smothered mate')
     
     def suffocation_and_pillsburys(self, available_squares, square):
@@ -87,7 +87,7 @@ class CheckmatePattern:
         # This algorithm checks the suffocation mate (with knight) and Pillsbury's mate (with rook)
         squares_free = []
         for i in available_squares:
-            if not self.is_blocked(i, not self.winner()):
+            if not self.is_blocked(i):
                 if len(squares_free) > 2:
                 # found too many free squares
                     continue
@@ -107,7 +107,7 @@ class CheckmatePattern:
         # If there is only 1 square that is not blocked by the king's own pieces
         one_square_free = False
         for i in available_squares:
-            if not self.is_blocked(i, not self.winner()):
+            if not self.is_blocked(i):
                 if one_square_free:
                 # found too many free squares
                     one_square_free = False
@@ -121,12 +121,12 @@ class CheckmatePattern:
 
     def back_rank(self, available_squares):
         # On a board, there are 2 realistic ways back ranks can happen (white checkmated on his side, and vice versa)
-        if all(self.is_blocked(i, not self.winner()) for i in available_squares[1:4]):
+        if all(self.is_blocked(i) for i in available_squares[1:4]):
             print('Back-rank mate')
         
     def back_rank_corner(self, available_squares):
         # Thre are 4 realistic ways back ranks with losing king on corner can happen
-        if all(self.is_blocked(i, not self.winner()) for i in available_squares[1:]):
+        if all(self.is_blocked(i) for i in available_squares[1:]):
             print('Back-rank mate')
 
     def scholars(self, available_squares, queen_pos):
@@ -146,13 +146,11 @@ class CheckmatePattern:
             for i in squares_free:
                 for attacker in self.board.attackers(self.winner(), i):
                     if str(self.board.piece_at(attacker)).upper() == 'N':
-                        anastasias = True
-        if anastasias:
-            print("Anastasia's mate")
+                        print("Anastasia's mate")
 
     def anastasias_corner(self, available_squares):
         for attacker in self.board.attackers(self.winner(), available_squares[0]):
-            if self.is_blocked(available_squares[1], not self.winner) and str(self.board.piece_at(attacker)).upper() == 'N':
+            if self.is_blocked(available_squares[1]) and str(self.board.piece_at(attacker)).upper() == 'N':
                 print("Anastasia's mate")
 
     def arabian(self, available_squares, rook_pos):
@@ -164,35 +162,37 @@ class CheckmatePattern:
         # If the losing king is blocked by 2 pieces each on each side and the queen is 2 squares away from him
         distance_king_queen = chess.square_distance(self.board.king(not self.winner()), queen_pos)
         
-        if self.is_blocked(available_squares[0], not self.winner()) and self.is_blocked(available_squares[4], not self.winner()) and distance_king_queen == 2:
+        if self.is_blocked(available_squares[0]) and self.is_blocked(available_squares[4]) and distance_king_queen == 2:
             print('Epaulette mate')
     
     def blind_swine(self, available_squares):
         only_one_square_blocked = False
         for i in available_squares:
-            if self.is_blocked(i, not self.winner()):
+            if self.is_blocked(i):
                 if only_one_square_blocked:
                     only_one_square_blocked = False
                 else:
                     only_one_square_blocked = True
     
-        if self.is_blocked(available_squares[4], not self.winner()) and only_one_square_blocked:
+        if self.is_blocked(available_squares[4]) and only_one_square_blocked:
             if str(self.board.piece_at(available_squares[1])).upper() == 'R':
                 print('Blind swine mate')
 
-        elif self.is_blocked(available_squares[0], not self.winner()) and only_one_square_blocked:
+        elif self.is_blocked(available_squares[0]) and only_one_square_blocked:
             if str(self.board.piece_at(available_squares[3])).upper() == 'R':
                 print('Blind swine mate')
 
     def swallows_tail(self, available_squares, square):
-        if ((available_squares[0] and available_squares[2]) or (available_squares[2] and available_squares[7]) or 
-        (available_squares[7] and available_squares[5]) or (available_squares[5] and available_squares[0]) and 
+        if ((self.is_blocked(available_squares[0]) and self.is_blocked(available_squares[2])) or 
+        (self.is_blocked(available_squares[2]) and self.is_blocked(available_squares[7])) or 
+        (self.is_blocked(available_squares[7]) and self.is_blocked(available_squares[5])) or 
+        (self.is_blocked(available_squares[5]) and self.is_blocked(available_squares[0])) and 
         chess.square_distance(self.board.king(not self.winner()), square)):
             print("Swallow's tail mate")
 
     def corner_and_morphys(self, available_squares, square):
         # This pattern takes care of the corner mate (given with knight) and Murphy's mate (given with bishop)
-        if (self.is_blocked(available_squares[2], not self.winner())):
+        if (self.is_blocked(available_squares[2])):
             for i in available_squares[1:]:
                 for attacker in self.board.attackers(self.winner(), i):
                     if str(self.board.piece_at(attacker)).upper() == 'R' or str(self.board.piece_at(attacker)).upper() == 'Q':
@@ -368,5 +368,5 @@ class CheckmatePattern:
                     # 100% error proof
                     pass
 
-print(CheckmatePattern('rnbq1rk1/pppp1pQp/4pPp1/8/8/8/PPPPP1PP/RNB1KBNR b KQq - 1 1').find_checkmate_pattern())
+#print(CheckmatePattern('rnbq1rk1/pppp1pQp/4pPp1/8/8/8/PPPPP1PP/RNB1KBNR b KQq - 1 1').find_checkmate_pattern())
 
