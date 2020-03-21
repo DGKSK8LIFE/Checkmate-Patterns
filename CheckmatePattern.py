@@ -211,6 +211,16 @@ class CheckmatePattern:
                     if chess.square_rank(square) == 1 and chess.square_rank(defender) == 2:
                         print("Lolli's mate")
 
+    def opera(self, available_squares, square):
+        if square == available_squares[0] and self.is_blocked(available_squares[3]):
+            for defender in self.board.attackers(self.winner(), available_squares[0]):
+                if str(self.board.piece_at(defender)) == 'B':
+                    print('Opera mate')
+        elif square == available_squares[4] and self.is_blocked(available_squares[1]):
+            for defender in self.board.attackers(self.winner(), available_squares[4]):
+                if str(self.board.piece_at(defender)) == 'B':
+                    print('Opera mate')
+
 
     def ladder(self, available_squares, square):
         # If all the remaining squares are attacked by a queen or a rook
@@ -350,6 +360,7 @@ class CheckmatePattern:
                             self.blind_swine(available_squares)
                             self.back_rank(available_squares)
                             self.anastasias(available_squares)
+                            self.opera(available_squares, square)
                             self.ladder(available_squares)
             
                         elif str(self.board.piece_at(square)).upper() == 'B':
@@ -368,5 +379,5 @@ class CheckmatePattern:
                     # 100% error proof
                     pass
 
-#print(CheckmatePattern('rnbq1rk1/pppp1pQp/4pPp1/8/8/8/PPPPP1PP/RNB1KBNR b KQq - 1 1').find_checkmate_pattern())
+print(CheckmatePattern('4B3/8/1p6/k7/R5K1/8/8/8 b - - 1 1').find_checkmate_pattern())
 
