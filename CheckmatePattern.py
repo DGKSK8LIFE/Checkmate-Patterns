@@ -307,26 +307,63 @@ class CheckmatePattern:
 
     def dovetail_bishop(self, available_squares, square):
         if square == available_squares[7]:
-            for attacker in self.board.attackers(available_squares[1]):
+            for attacker in self.board.attackers(self.winner(), available_squares[1]):
                 if available_squares[3] in self.board.attacks(attacker) and str(self.board.piece_at(attacker)) == 'B':
                     print('Dovetail bishop mate')
         elif square == available_squares[5]:
-            for attacker in self.board.attackers(available_squares[1]):
+            for attacker in self.board.attackers(self.winner(), available_squares[1]):
                 if available_squares[4] in self.board.attacks(attacker) and str(self.board.piece_at(attacker)) == 'B':
                     print('Dovetail bishop mate')
         elif square == available_squares[0]:
-            for attacker in self.board.attackers(available_squares[4]):
+            for attacker in self.board.attackers(self.winner(), available_squares[4]):
                 if available_squares[6] in self.board.attacks(attacker) and str(self.board.piece_at(attacker)) == 'B':
                     print('Dovetail bishop mate')
         elif square == available_squares[2]:
-            for attacker in self.board.attackers(available_squares[6]):
+            for attacker in self.board.attackers(self.winner(), available_squares[6]):
                 if available_squares[3] in self.board.attacks(attacker) and str(self.board.piece_at(attacker)) == 'B':
                     print('Dovetail bishop mate')
+
+    def kill_box(self, available_squares, square):
+        if square == available_squares[0]:  
+            for defender in self.board.attackers(self.winner(), square):
+                if (str(self.board.piece_at(defender)).upper() == 'Q' and chess.square_distance(square, defender) == 2 and 
+                (available_squares[3] and available_squares[4] in self.board.attacks(defender))):
+                    print('Kill box mate')
+
+        elif square == available_squares[4]:
+            for defender in self.board.attackers(self.winner(), square):
+                if (str(self.board.piece_at(defender)).upper() == 'Q' and chess.square_distance(square, defender) == 2 and 
+                (available_squares[0] and available_squares[1] in self.board.attacks(defender))):
+                    print('Kill box mate')
+    
+    def triangle(self, available_squares, square):
+        if square == available_squares[1]:
+            for defender in self.board.attackers(self.winner(), square):
+                if (str(self.board.piece_at(defender)).upper() == 'R' and chess.square_distance(square, defender) == 2 and 
+                (available_squares[2] and available_squares[4] in self.board.attacks(defender))):
+                    print('Triangle mate')
+
+        elif square == available_squares[3]:
+            for defender in self.board.attackers(self.winner(), square):
+                if (str(self.board.piece_at(defender)).upper() == 'R' and chess.square_distance(square, defender) == 2 and 
+                (available_squares[2] and available_squares[0] in self.board.attacks(defender))):
+                    print('Triangle mate')
+    
+    def triangle_center(self, available_squares, square):
+        for defender in self.board.attackers(self.winner(), square):
+                if str(self.board.piece_at(defender)).upper() == 'R' and chess.square_distance(square, defender) == 2 and (defender in available_squares):
+                    if self.is_blocked(available_squares[1]) or self.is_blocked(available_squares[3]) or self.is_blocked(available_squares[4]) or self.is_blocked(available_squares[6]):
+                        print('Triangle mate')
+
+    def balestra(self, available_squares, square):
+        for attacker in self.board.attackers(self.winner(), available_squares[2]):
+            if (chess.square_distance(square, self.board.king(not self.winner)) == 2 and 
+            chess.square_distance(attacker, self.board.king(not self.winner)) == 2 and chess.square_distance(square, attacker) == 3):
+                print('Balestra mate')
 
     def ladder(self, available_squares, square):
         # If all the remaining squares are attacked by a queen or a rook
         ladder = False
-        remaining_squares = [available_squares[0], available_squares[4]]
 
         checkmater_file = 0
         checkmater_rank = 0
@@ -335,30 +372,46 @@ class CheckmatePattern:
 
         for i in available_squares[1:4]:
             for attacker in self.board.attackers(self.winner(), i):       
-                if (self.board.color_at(attacker) == self.winner() and square != i and 
-                (str(self.board.piece_at(attacker)).upper() == 'Q' or str(self.board.piece_at(attacker)).upper() == 'R')):
+                if square != i and (str(self.board.piece_at(attacker)).upper() == 'Q' or str(self.board.piece_at(attacker)).upper() == 'R'):
                     # For some reason, it would print 'Ladder mate' 3 times. This just bypasses it.
                     attacker_file = chess.square_file(attacker)
                     attacker_rank = chess.square_rank(attacker)
                     ladder = True
 
-        for i in remaining_squares:
-            for checkmater in self.board.attackers(self.winner(), i):
-                if str(self.board.piece_at(checkmater)).upper() == 'R' or str(self.board.piece_at(checkmater)).upper() == 'Q':
-                    checkmater_file = chess.square_file(checkmater)
-                    checkmater_rank = chess.square_rank(checkmater)
-                    ladder = True
-                else:
-                    ladder = False
+        if (available_squares[0] and available_squares[4]) in self.board.attacks(square):
+            checkmater_file = chess.square_file(square)
+            checkmater_rank = chess.square_rank(square)
+            ladder = True
+        else:
+            ladder = False
 
         
-        if ((checkmater_file == 0 and attacker_file == 1) or (checkmater_file == 7 and attacker_file == 6)) or ((checkmater_rank == 0 and attacker_rank == 1) or (checkmater_rank == 7 and attacker_rank == 6)):
+        if (((checkmater_file == 0 and attacker_file == 1) or (checkmater_file == 7 and attacker_file == 6)) or 
+        ((checkmater_rank == 0 and attacker_rank == 1) or (checkmater_rank == 7 and attacker_rank == 6))):
             if ladder:
                 print('Ladder mate')
     
     def ladder_corner(self, available_squares, square):
         # 8 plausible ways to get ladder mated on a corner
-        pass
+        ladder = False
+
+        if chess.square_file(square) == 0 or chess.square_file(square) == 7:
+            for i in available_squares[:2]:
+                for attacker in self.board.attackers(self.winner(), i):
+                    if (square != i and (str(self.board.piece_at(attacker)).upper() == 'Q' or str(self.board.piece_at(attacker)).upper() == 'R') and 
+                    (chess.square_file(attacker) == 1 or chess.square_file(attacker) == 6)):
+                        ladder = True
+
+        elif chess.square_rank(square) == 0 or chess.square_rank(square) == 7:
+            for i in available_squares[1:]:
+                for attacker in self.board.attackers(self.winner(), i):
+                    if (square != i and (str(self.board.piece_at(attacker)).upper() == 'Q' or str(self.board.piece_at(attacker)).upper() == 'R') and 
+                    (chess.square_rank(attacker) == 1 or chess.square_rank(attacker) == 6)):
+                        ladder = True
+
+        # Prevents from printing it out multiple times
+        if ladder:
+            print('Ladder mate')
     
     def find_checkmate_pattern(self):
         losing_side = not self.winner()
@@ -420,6 +473,9 @@ class CheckmatePattern:
                             print(self.get_full_name('Q'), 'gave checkmate')
 
                             self.swallows_tail(available_squares, square)
+                            self.dovetail(available_squares, square)
+                            self.dovetail_bishop(available_squares, square)
+                            self.triangle_center(available_squares, square)
 
                         elif str(self.board.piece_at(square)).upper() == 'R':
                             print(self.get_full_name('R'), 'gave checkmate')
@@ -459,11 +515,14 @@ class CheckmatePattern:
                             self.blind_swine(available_squares, square)
                             self.back_rank(available_squares, square)
                             self.anastasias(available_squares)
-                            self.opera(available_squares, square)       
+                            self.opera(available_squares, square)
+                            self.kill_box(available_squares, square)   
                             self.box(available_squares)                
             
                         elif str(self.board.piece_at(square)).upper() == 'B':
                             print(self.get_full_name('B'), 'gave checkmate')
+
+                            self.balestra(available_squares, square)
 
                         elif str(self.board.piece_at(square)).upper() == 'N':
                             print(self.get_full_name('N'), 'gave checkmate')
@@ -477,9 +536,6 @@ class CheckmatePattern:
                 except TypeError:
                     # 100% error proof
                     pass
-    
-    def get_checkmates(self):
-        pass
 
 
-print(CheckmatePattern('7k/6p1/8/8/2B5/8/1K6/7R b - - 1 1').find_checkmate_pattern())
+CheckmatePattern('8/8/8/8/QR3K2/8/8/k7 b - - 1 1').find_checkmate_pattern()
